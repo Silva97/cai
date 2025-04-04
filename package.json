@@ -1,0 +1,26 @@
+{
+  "name": "cai",
+  "version": "0.1.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "AI",
+    "LLM"
+  ],
+  "author": "Luiz Felipe Silva <silva97@freedev.com.br>",
+  "license": "MIT",
+  "description": "CLI tool to write code using AI",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "openai": "^4.91.1",
+    "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "prettier": "^3.5.3"
+  }
+}
