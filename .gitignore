@@ -1,4 +1,6 @@
 .env
+*.cai
 
 node_modules
 dist
+lab
