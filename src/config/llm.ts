@@ -16,6 +16,8 @@ const serviceName = validate(String, 'LLM_SERVICE', Object.keys(serviceMap))
 const llmConfig = {
   serviceName,
   model: validate(String, 'LLM_MODEL'),
+  temperature: validate(Number, 'LLM_TEMPERATURE'),
+  seed: validate(Number, 'LLM_SEED'),
   LLMService: serviceMap[serviceName],
   api: {
     baseURL: validate(String, 'API_BASEURL'),
@@ -27,14 +29,19 @@ export default llmConfig
 
 function validate<T>(typeCast: (value: any) => T, varName: string, values: any[] = []): T {
   if (process.env[varName] === undefined) {
-    throw new Error(`Environment variable "${varName}" is required!`)
+    error(`Environment variable "${varName}" is required!`)
   }
 
   const value = typeCast(process.env[varName])
 
   if (values.length > 0 && !values.includes(value)) {
-    throw new Error(`Environment variable "${varName}" should be one of: ${values}`)
+    error(`Environment variable "${varName}" should be one of: ${values}`)
   }
 
   return value
+}
+
+function error(message: string): never {
+  console.error(message)
+  process.exit(1)
 }

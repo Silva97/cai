@@ -4,8 +4,8 @@ export interface LLMOptions {
 }
 
 export enum LLMRole {
-  SYSTEM,
-  USER,
+  SYSTEM = 'system',
+  USER = 'user',
 }
 
 export enum LLMResponseStatus {
