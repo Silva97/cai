@@ -1,4 +1,4 @@
-import { Content, GoogleGenAI } from '@google/genai'
+import { GoogleGenAI, Part } from '@google/genai'
 import LLMService, { LLMMessage, LLMOptions, LLMResponse, LLMResponseStatus, LLMRole } from './LLMService'
 import llmConfig from '../../config/llm'
 
@@ -12,17 +12,16 @@ export default class GenAIService extends LLMService {
 
   public async message(messages: LLMMessage[]): Promise<LLMResponse> {
     try {
-      const chat = this.client.chats.create({
+      const response = await this.client.models.generateContent({
         model: llmConfig.model,
         config: {
           seed: llmConfig.seed,
           temperature: llmConfig.temperature,
         },
-        history: this.messagesToContent(this.contexts),
-      })
-
-      const response = await chat.sendMessage({
-        message: messages.map((msg) => ({ text: msg.message })),
+        contents: {
+          role: 'user',
+          parts: this.messagesToParts(messages),
+        },
       })
 
       return {
@@ -38,21 +37,16 @@ export default class GenAIService extends LLMService {
     }
   }
 
-  private messagesToContent(messages: LLMMessage[]): Content[] {
-    const roleMap = {
-      [LLMRole.SYSTEM]: 'model',
-      [LLMRole.USER]: 'user',
-    }
+  private messagesToParts(messages: LLMMessage[]): Part[] {
+    const final: Part[] = []
 
     const mapfn = (msg: LLMMessage) => ({
-      role: roleMap[msg.role],
-      parts: [
-        {
-          text: msg.message,
-        },
-      ],
+      text: msg.message,
     })
 
-    return messages.map(mapfn)
+    final.push(...this.contexts.map(mapfn))
+    final.push(...messages.map(mapfn))
+
+    return final
   }
 }
