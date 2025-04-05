@@ -48,7 +48,7 @@ export default abstract class LLMService implements LLM {
 
   public context(message: string): this {
     this.contexts.push({
-      role: LLMRole.SYSTEM,
+      role: LLMRole.USER,
       message,
     })
 

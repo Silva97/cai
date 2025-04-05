@@ -1,6 +1,7 @@
 import { config } from 'dotenv'
 import OpenAIService from '../services/LLMService/OpenAIService'
 import { LLM, LLMOptions } from '../services/LLMService/LLMService'
+import GenAIService from '../services/LLMService/GenAIService'
 
 config()
 
@@ -10,6 +11,7 @@ interface ServiceMap {
 
 const serviceMap: ServiceMap = {
   openai: OpenAIService,
+  genai: GenAIService,
 }
 
 const serviceName = validate(String, 'LLM_SERVICE', Object.keys(serviceMap))
