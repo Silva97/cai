@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import fs from 'fs/promises'
 import llmConfig from './config/llm'
 import { LLMResponseStatus, LLMRole } from './services/LLMService/LLMService'
