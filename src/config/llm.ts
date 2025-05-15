@@ -1,9 +1,25 @@
-import { config } from 'dotenv'
+import os from 'os'
+import fs from 'fs'
+import path from 'path'
 import OpenAIService from '../services/LLMService/OpenAIService'
 import { LLM, LLMOptions } from '../services/LLMService/LLMService'
 import GenAIService from '../services/LLMService/GenAIService'
 
-config()
+const configPath = path.join(os.homedir(), '.cai.json')
+
+if (!fs.existsSync(configPath)) {
+  console.error(`Configuration file not found: ${configPath}`)
+  process.exit(9)
+}
+
+let configData: Record<string, any>
+try {
+  const fileContent = fs.readFileSync(configPath, 'utf8')
+  configData = JSON.parse(fileContent)
+} catch (err) {
+  console.error(`Error on read '${configPath}':`, err)
+  process.exit(9)
+}
 
 interface ServiceMap {
   [key: string]: new (options: LLMOptions) => LLM
@@ -14,30 +30,30 @@ const serviceMap: ServiceMap = {
   genai: GenAIService,
 }
 
-const serviceName = validate(String, 'LLM_SERVICE', Object.keys(serviceMap))
+const serviceName = validate(String, 'llm_service', Object.keys(serviceMap))
 const llmConfig = {
   serviceName,
-  model: validate(String, 'LLM_MODEL'),
-  temperature: validate(Number, 'LLM_TEMPERATURE'),
-  seed: validate(Number, 'LLM_SEED'),
+  model: validate(String, 'llm_model'),
+  temperature: validate(Number, 'llm_temperature'),
+  seed: validate(Number, 'llm_seed'),
   LLMService: serviceMap[serviceName],
   api: {
-    baseURL: validate(String, 'API_BASEURL'),
-    token: validate(String, 'API_TOKEN'),
+    baseURL: validate(String, 'api_baseurl'),
+    token: validate(String, 'api_token'),
   },
 }
 
 export default llmConfig
 
-function validate<T>(typeCast: (value: any) => T, varName: string, values: any[] = []): T {
-  if (process.env[varName] === undefined) {
-    error(`Environment variable "${varName}" is required!`)
+function validate<T>(typeCast: (value: any) => T, key: string, values: any[] = []): T {
+  if (configData[key] === undefined) {
+    error(`Config key "${key}" is required!`)
   }
 
-  const value = typeCast(process.env[varName])
+  const value = typeCast(configData[key])
 
   if (values.length > 0 && !values.includes(value)) {
-    error(`Environment variable "${varName}" should be one of: ${values}`)
+    error(`Config key "${key}" should be one of: ${values}`)
   }
 
   return value
@@ -45,5 +61,5 @@ function validate<T>(typeCast: (value: any) => T, varName: string, values: any[]
 
 function error(message: string): never {
   console.error(message)
-  process.exit(1)
+  process.exit(9)
 }
