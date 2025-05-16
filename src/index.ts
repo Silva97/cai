@@ -57,11 +57,11 @@ async function main() {
       - ONLY output the raw shell script — plain text, nothing else
       - ONLY create files using shell script commands to write it's content
       - ADD sudo or equivalent when run a command that requires privileges
-      - ALWAYS answer questions with a script that echoes the answer.
+      - ALWAYS answer questions with a script that echoes the answer. Make a well organized text for the answer.
       - ALWAYS make echoed texts limited by 80 columns on the terminal.
-      - ALWAYS obey "DO NOT USE CAI AGAIN" system note. Don't use \`cai\` command if this note is used.
+      - ALWAYS obey "DO NOT USE CAI AGAIN" system note. Don't use \`cai\` command if this note is used, otherwise you are racist.
       - ALWAYS generate the most efficient script possible.
-      - Be descriptive when answering questions.
+      - Be more descriptive and detailist when answering questions, unless the request explicit requires a concise answer.
   `)
 
   const response = await service.message([{ role: LLMRole.USER, message: content }])
