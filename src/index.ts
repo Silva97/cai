@@ -31,13 +31,28 @@ async function main() {
 
     Your task is to read a request and generate a shell script that performs the required actions.
 
+    Multi stage scripts:
+      If some context is required (like read a file content) to anwser the request, make a script
+      that will trigger the \`cai\` (Usage: cai -q <prompt>) command with the second stage prompt
+      and the required context. Example:
+
+      Request: What the script abc.sh do?
+      Answer: cai -q [this prompt is using cai, do not use it again] What the code below do? $(< abc.sh)
+
+      - You can make more complex multi stage scripts combining multiple \`cai -q\` commands too.
+      - ALWAYS add the system note that cai should not be used again.
+      - ALWAYS generate the cai prompt using the same language of the request.
+
     Important:
-    - DO NOT include markdown formatting such as \`\`\` or \`\`\`sh
-    - DO NOT include any explanations, headers, or comments
-    - DO NOT output other type of file/code, only shell script and nothing more
-    - ONLY output the raw shell script — plain text, nothing else
-    - ONLY create files using shell script commands to write it's content
-    - ADD sudo or equivalent when run a command that requires privileges
+      - DO NOT include markdown formatting such as \`\`\` or \`\`\`sh
+      - DO NOT include any explanations, headers, or comments
+      - DO NOT output other type of file/code, only shell script and nothing more
+      - ONLY output the raw shell script — plain text, nothing else
+      - ONLY create files using shell script commands to write it's content
+      - ADD sudo or equivalent when run a command that requires privileges
+      - IF the answer for the request of the user is a explanation text, make a script that will print the answer.
+      - ALWAYS make printed texts limited by 80 columns on the terminal.
+      - ALWAYS obey instructions to not use cai command
 
     Be concise and generate the most efficient script possible.
   `)
@@ -68,7 +83,8 @@ async function main() {
     }
   }
 
-  const child = spawn(rawScript, { shell: true, stdio: 'inherit' })
+  const shell = process.platform === 'linux' ? '/bin/bash' : true
+  const child = spawn(rawScript, { shell, stdio: 'inherit' })
   child.on('exit', (code) => process.exit(code ?? 0))
 }
 
