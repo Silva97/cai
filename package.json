@@ -16,12 +16,11 @@
   ],
   "author": "Luiz Felipe Silva <silva97@freedev.com.br>",
   "license": "MIT",
-  "description": "CLI tool to write code using AI",
+  "description": "CLI tool to run CLI commands using AI",
   "dependencies": {
     "@google/genai": "^0.7.0",
     "chalk": "^5.4.1",
     "cli-highlight": "^2.1.11",
-    "dotenv": "^16.4.7",
     "openai": "^4.91.1",
     "typescript": "^5.8.2"
   },
