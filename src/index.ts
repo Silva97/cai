@@ -44,13 +44,12 @@ async function main() {
     process.exit(1)
   }
 
-  const script = response.data.trim()
+  const rawScript = stripMarkdownCodeBlock(response.data.trim())
 
   console.log(
-    '\n' +
-      chalk.bold.underline('Generated script:') +
+    chalk.bold.underline('Generated script:') +
       '\n' +
-      highlight(script, { language: 'bash', ignoreIllegals: true }) +
+      highlight(rawScript, { language: 'bash', ignoreIllegals: true }) +
       '\n',
   )
 
@@ -62,8 +61,15 @@ async function main() {
     process.exit(0)
   }
 
-  const child = spawn(script, { shell: true, stdio: 'inherit' })
+  const child = spawn(rawScript, { shell: true, stdio: 'inherit' })
   child.on('exit', (code) => process.exit(code ?? 0))
+}
+
+function stripMarkdownCodeBlock(text: string) {
+  const codeBlockRegex = /^```(?:\w+)?\n([\s\S]*?)\n```$/gm
+  const match = codeBlockRegex.exec(text)
+  if (match) return match[1].trim()
+  return text
 }
 
 async function getOSString() {
