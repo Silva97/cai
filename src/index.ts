@@ -9,7 +9,7 @@ import llmConfig from './config/llm'
 import { LLMResponseStatus, LLMRole } from './services/LLMService/LLMService'
 
 main().catch((err) => {
-  console.error(chalk.red('Erro inesperado:'), err)
+  console.error(chalk.red('Unexpected error:'), err)
   process.exit(1)
 })
 
