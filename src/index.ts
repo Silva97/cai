@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 import fs from 'fs/promises'
+import { execSync, spawn } from 'child_process'
+import readline from 'readline/promises'
+import chalk from 'chalk'
+import { highlight } from 'cli-highlight'
+
 import llmConfig from './config/llm'
 import { LLMResponseStatus, LLMRole } from './services/LLMService/LLMService'
-import { execSync, spawn } from 'child_process'
 
-main()
+main().catch((err) => {
+  console.error(chalk.red('Erro inesperado:'), err)
+  process.exit(1)
+})
 
 async function main() {
   const service = new llmConfig.LLMService({
@@ -13,6 +20,7 @@ async function main() {
   })
 
   const osInfo = await getOSString()
+
   service.context(`
     You are a shell script generator running in a terminal on the ${osInfo} operating system.
 
@@ -21,34 +29,41 @@ async function main() {
     Important:
     - DO NOT include markdown formatting such as \`\`\` or \`\`\`sh
     - DO NOT include any explanations, headers, or comments
+    - DO NOT output other type of file/code, only shell script and nothing more
     - ONLY output the raw shell script — plain text, nothing else
+    - ONLY create files using shell script commands to write it's content
 
     Be concise and generate the most efficient script possible.
   `)
 
-  const content = process.argv.join(' ')
-  const response = await service.message([
-    {
-      role: LLMRole.USER,
-      message: content,
-    },
-  ])
+  const content = process.argv.slice(2).join(' ')
+  const response = await service.message([{ role: LLMRole.USER, message: content }])
 
-  if (response.status != LLMResponseStatus.OK) {
-    console.error('Deu ruim!', response.data)
+  if (response.status !== LLMResponseStatus.OK) {
+    console.error(chalk.red('Error:'), response.data)
     process.exit(1)
   }
 
-  console.log(`Running:\n${response.data}`)
+  const script = response.data.trim()
 
-  const child = spawn(response.data, {
-    shell: true,
-    stdio: 'inherit',
-  })
+  console.log(
+    '\n' +
+      chalk.bold.underline('Generated script:') +
+      '\n' +
+      highlight(script, { language: 'bash', ignoreIllegals: true }) +
+      '\n',
+  )
 
-  child.on('exit', (code, signal) => {
-    process.exit(code)
-  })
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+  const answer = (await rl.question(chalk.yellowBright('Do you want to run the script? [y/N] › '))).trim()
+  rl.close()
+
+  if (!/^(y|yes)$/i.test(answer)) {
+    process.exit(0)
+  }
+
+  const child = spawn(script, { shell: true, stdio: 'inherit' })
+  child.on('exit', (code) => process.exit(code ?? 0))
 }
 
 async function getOSString() {
@@ -60,34 +75,29 @@ async function getOSString() {
       const lines = Object.fromEntries(
         data
           .split('\n')
-          .filter((line) => line.includes('='))
-          .map((line) => {
-            const [k, v] = line.split('=')
+          .filter(Boolean)
+          .map((l) => {
+            const [k, v] = l.split('=')
             return [k, v.replace(/^"|"$/g, '')]
           }),
       )
-
       return `Linux ${lines.NAME} ${lines.VERSION_ID}`
     } catch {
       return 'Linux (unknown distro)'
     }
   } else if (platform === 'darwin') {
     try {
-      const productVersion = execSync('sw_vers -productVersion').toString().trim()
-      return `macOS ${productVersion}`
+      return `macOS ${execSync('sw_vers -productVersion').toString().trim()}`
     } catch {
       return 'macOS (unknown version)'
     }
   } else if (platform === 'win32') {
     try {
-      const output = execSync('wmic os get Caption').toString()
-      const lines = output.trim().split('\n').filter(Boolean)
-      const caption = lines[1] || 'Windows (unknown version)'
-      return caption.trim()
+      const out = execSync('wmic os get Caption').toString().trim().split('\n')
+      return out[1]?.trim() || 'Windows (unknown version)'
     } catch {
       return 'Windows (unknown version)'
     }
-  } else {
-    return `Unknown platform: ${platform}`
   }
+  return `Unknown platform: ${platform}`
 }
