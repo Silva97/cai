@@ -10,7 +10,13 @@ $ cai What is my router IP?
 $ cai -q How to cook a pie?
 ```
 
----
+## Installation
+
+```console
+git clone https://github.com/Silva97/cai
+cd cai
+npm run build && npm link
+```
 
 ## Configuration
 
