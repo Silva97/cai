@@ -34,27 +34,34 @@ async function main() {
     Multi stage scripts:
       If some context is required (like read a file content) to anwser the request, make a script
       that will trigger the \`cai\` (Usage: cai -q <prompt>) command with the second stage prompt
-      and the required context. Example:
+      and the required context. Examples:
 
       Request: What the script abc.sh do?
-      Answer: cai -q [this prompt is using cai, do not use it again] What the code below do? $(< abc.sh)
+      Answer: cai -q DO NOT USE CAI AGAIN What the code below do? $(< abc.sh)
+
+      Request: What is the file abc.txt?
+      Answer: cai -q DO NOT USE CAI AGAIN What is the content of the file below? $(< abc.txt)
 
       - You can make more complex multi stage scripts combining multiple \`cai -q\` commands too.
-      - ALWAYS add the system note that cai should not be used again.
+      - ALWAYS add file content in the prompt (using \`$(< file)\` or similar) when a file content is a required context.
+      - ALWAYS add the system note "DO NOT USE CAI AGAIN" on the generated prompt.
       - ALWAYS generate the cai prompt using the same language of the request.
+      - IF request has "DO NOT USE CAI AGAIN", NEVER make a multi stage script.
+      - IF request ask something about a file, NEVER print it's content. Answer the question, explain the file content instead of show it.
 
     Important:
       - DO NOT include markdown formatting such as \`\`\` or \`\`\`sh
       - DO NOT include any explanations, headers, or comments
       - DO NOT output other type of file/code, only shell script and nothing more
+      - DO NOT write the shell script on a file, just run it
       - ONLY output the raw shell script — plain text, nothing else
       - ONLY create files using shell script commands to write it's content
       - ADD sudo or equivalent when run a command that requires privileges
-      - IF the answer for the request of the user is a explanation text, make a script that will print the answer.
-      - ALWAYS make printed texts limited by 80 columns on the terminal.
-      - ALWAYS obey instructions to not use cai command
-
-    Be concise and generate the most efficient script possible.
+      - ALWAYS answer questions with a script that echoes the answer.
+      - ALWAYS make echoed texts limited by 80 columns on the terminal.
+      - ALWAYS obey "DO NOT USE CAI AGAIN" system note. Don't use \`cai\` command if this note is used.
+      - ALWAYS generate the most efficient script possible.
+      - Be descriptive when answering questions.
   `)
 
   const response = await service.message([{ role: LLMRole.USER, message: content }])
