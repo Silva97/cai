@@ -14,6 +14,11 @@ main().catch((err) => {
 })
 
 async function main() {
+  const args = process.argv.slice(2)
+  const quiet = args.includes('-q') || args.includes('--quiet')
+  const filteredArgs = args.filter((arg) => arg !== '-q' && arg !== '--quiet')
+  const content = filteredArgs.join(' ')
+
   const service = new llmConfig.LLMService({
     baseURL: llmConfig.api.baseURL,
     token: llmConfig.api.token,
@@ -36,7 +41,6 @@ async function main() {
     Be concise and generate the most efficient script possible.
   `)
 
-  const content = process.argv.slice(2).join(' ')
   const response = await service.message([{ role: LLMRole.USER, message: content }])
 
   if (response.status !== LLMResponseStatus.OK) {
@@ -46,19 +50,21 @@ async function main() {
 
   const rawScript = stripMarkdownCodeBlock(response.data.trim())
 
-  console.log(
-    chalk.bold.underline('Generated script:') +
-      '\n' +
-      highlight(rawScript, { language: 'bash', ignoreIllegals: true }) +
-      '\n',
-  )
+  if (!quiet) {
+    console.log(
+      chalk.bold.underline('Generated script:') +
+        '\n' +
+        highlight(rawScript, { language: 'bash', ignoreIllegals: true }) +
+        '\n',
+    )
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-  const answer = (await rl.question(chalk.yellowBright('Do you want to run the script? [y/N] › '))).trim()
-  rl.close()
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    const answer = (await rl.question(chalk.yellowBright('Do you want to run the script? [y/N] › '))).trim()
+    rl.close()
 
-  if (!/^(y|yes)$/i.test(answer)) {
-    process.exit(0)
+    if (!/^(y|yes)$/i.test(answer)) {
+      process.exit(0)
+    }
   }
 
   const child = spawn(rawScript, { shell: true, stdio: 'inherit' })

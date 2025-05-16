@@ -7,6 +7,7 @@ Usage example:
 ```console
 $ cai Generate a main.c example
 $ cai What is my router IP?
+$ cai -q How to cook a pie?
 ```
 
 ---
