@@ -37,6 +37,7 @@ async function main() {
     - DO NOT output other type of file/code, only shell script and nothing more
     - ONLY output the raw shell script — plain text, nothing else
     - ONLY create files using shell script commands to write it's content
+    - ADD sudo or equivalent when run a command that requires privileges
 
     Be concise and generate the most efficient script possible.
   `)
